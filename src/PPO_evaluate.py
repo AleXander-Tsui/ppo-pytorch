@@ -35,7 +35,7 @@ Transition = namedtuple('Transition', ['state', 'action',  'a_log_prob', 'reward
 class Actor(nn.Module):
     def __init__(self):
         super(Actor, self).__init__()
-        self.fc1 = nn.Linear(num_state, 100)
+        self.fc1 = nn.Linear(num_state+3, 100)
         self.action_head = nn.Linear(100, num_action)
 
     def forward(self, x):
@@ -48,13 +48,17 @@ if __name__ == '__main__':
     agent1 = Actor()
     agent2 = Actor()
     agent3 = Actor()
-    agent4 = Actor()
-    agent1.load_state_dict(torch.load('../param/net_param/actor_net_11582342728.pkl'))
-    agent2.load_state_dict(torch.load('../param/net_param/actor_net_21582342742.pkl'))
-    agent3.load_state_dict(torch.load('../param/net_param/actor_net_31582342758.pkl'))
-    agent4.load_state_dict(torch.load('../param/net_param/actor_net_41582342780.pkl'))
-    if not os.path.exists('../gifs'):
-        os.makedirs('../gifs')
+    #agent4 = Actor()
+    #agent1.load_state_dict(torch.load('../param/net_param/actor_net_11582342728.pkl'))
+    #agent2.load_state_dict(torch.load('../param/net_param/actor_net_21582342742.pkl'))
+    #agent3.load_state_dict(torch.load('../param/net_param/actor_net_31582342758.pkl'))
+    #agent4.load_state_dict(torch.load('../param/net_param/actor_net_41582342780.pkl'))
+    agent1.load_state_dict(torch.load('../exp/run25/net_param/actor_net_1.pkl'))
+    agent2.load_state_dict(torch.load('../exp/run25/net_param/actor_net_2.pkl'))
+    agent3.load_state_dict(torch.load('../exp/run25/net_param/actor_net_3.pkl'))
+    #agent4.load_state_dict(torch.load('../exp/run24/net_param/actor_net_4.pkl'))
+    if not os.path.exists('../exp/run25/gifs'):
+        os.makedirs('../exp/run25/gifs')
     n_episodes = 10
     save_gifs = True
     episode_length = 30
@@ -75,8 +79,15 @@ if __name__ == '__main__':
             # get actions as torch Variables
             #import pdb; pdb.set_trace()
             ### 手动拼agent的state
-            torch_actions = [agent1(state[0].view(-1, num_state)), agent2(state[1].view(-1, num_state)), agent3(state[2].view(-1, num_state)), agent4(state[3].view(-1, num_state))]
 
+            v1 = torch.Tensor([1,0,0])
+            v2 = torch.Tensor([0,1,0])
+            v3 = torch.Tensor([0,0,1])
+            #import pdb; pdb.set_trace()
+            #torch_actions = [agent1(state[0].view(-1, num_state)), agent2(state[1].view(-1, num_state)), agent3(state[2].view(-1, num_state))]
+            #                agent4(state[3].view(-1, num_state))]
+            torch_actions = [agent1(torch.cat((state[0], v1)).view(-1, num_state+3)), agent2(torch.cat((state[1], v2)).view(-1, num_state+3)), 
+                             agent3(torch.cat((state[2], v3)).view(-1, num_state+3))]
             # convert actions to numpy arrays
             prob_actions = [ac.data.numpy().flatten() for ac in torch_actions]
             #import pdb; pdb.set_trace()
@@ -100,7 +111,7 @@ if __name__ == '__main__':
             env.render('human')
         if save_gifs:
             gif_num = 0
-            while os.path.exists('../gifs/%i_%i.gif' % (gif_num, ep_i)):
+            while os.path.exists('../exp/run25/gifs/%i_%i.gif' % (gif_num, ep_i)):
                 gif_num += 1
-            imageio.mimsave('../gifs/%i_%i.gif' % (gif_num, ep_i),
+            imageio.mimsave('../exp/run25/gifs/%i_%i.gif' % (gif_num, ep_i),
                             frames, duration=ifi)
