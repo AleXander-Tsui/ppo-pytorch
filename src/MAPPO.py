@@ -22,7 +22,7 @@ import pdb
 
 
 # Parameters
-gamma = 0.95
+gamma = 0.99
 render = False
 seed = 1
 log_interval = 10
@@ -41,14 +41,14 @@ def make_parallel_env(env_id, n_rollout_threads, seed, discrete_action):
     else:
         return SubprocVecEnv([get_env_fn(i) for i in range(n_rollout_threads)])
 
-env_num = 80
+env_num = 100
 agents_num = 4
 episode_num = 30
-epoch_num = 3000
-if_share_policy = True
-if_share_critic = True
-if_mix = True           ### if if_mix == True, share_policy and share_critic == True
-if_assign_id = True
+epoch_num = 10000
+if_share_policy = False
+if_share_critic = False
+if_mix = False           ### if if_mix == True, share_policy and share_critic == True
+if_assign_id = False
 env = make_parallel_env("simple_spread", env_num, seed, True)
 num_state = env.observation_space[0].shape[0]  #agent*6
 num_action = env.action_space[0].n
@@ -243,9 +243,9 @@ class MAPPO(object):
 
     clip_param = 0.2
     max_grad_norm = 0.5
-    ppo_update_time = 15
+    ppo_update_time = 20
     buffer_capacity = 1000
-    batch_size = 4096
+    batch_size = 2048
 
     def __init__(self,agents_num,env_num):
         #self.nagents = 4
@@ -428,6 +428,8 @@ def main():
                    "\nepisode num: " + str(episode_num) +
                    "\nepoch num: " + str(epoch_num) +
                    "\nif_mix: " + str(if_mix) +
+                   "\nif_share_policy: " + str(if_share_policy) +
+                   "\nif_share_critic: " + str(if_share_critic) +
                    "\nif_assign_id: " + str(if_assign_id) +
                    "\nppo_update_time: " + str(MA.ppo_update_time) +
                    "\nbatch_size: " + str(MA.batch_size))
